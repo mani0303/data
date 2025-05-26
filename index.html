@@ -1,0 +1,53 @@
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['number'])) {
+  $number = urlencode($_POST['number']);
+  $apiUrl = "https://shadowtools.site/shadowapi/api.php?number=" . $number;
+  $response = file_get_contents($apiUrl);
+  $data = json_decode($response, true);
+}
+?><!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shadow SIM Details Finder</title>
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif;}
+    body {background: #0a0a0a; color: #fff; padding: 10px;}
+    .header {text-align: center; padding: 20px; font-size: 24px; background: linear-gradient(90deg, #00ffaa, #00e6aa); color: #000; font-weight: bold; border-radius: 12px; box-shadow: 0 0 15px #00ffaa88; margin-bottom: 20px;}
+    .container {max-width: 600px; margin: auto; padding: 15px; background: #161616; border-radius: 16px; box-shadow: 0 0 30px #00ffaa22;}
+    form input[type="text"] {width: 100%; padding: 14px; border-radius: 10px; background: #2a2a2a; color: #fff; border: 2px solid #00ffaa33; margin-bottom: 15px; font-size: 16px;}
+    form input[type="submit"] {width: 100%; padding: 14px; background: #00ffaa; color: #000; border: none; font-weight: bold; font-size: 18px; border-radius: 10px; cursor: pointer; transition: 0.3s;}
+    form input[type="submit"]:hover {background: #00e699;}
+    .result-card {margin-top: 20px; background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #00ffaa44; box-shadow: 0 0 20px #00ffaa33; animation: slideIn 0.5s ease-in-out;}
+    .result-card p {margin: 6px 0; font-size: 15px;}
+    @keyframes slideIn {from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);}}
+    .footer {margin-top: 30px; text-align: center; color: #00ffaa; padding: 15px; font-size: 15px;}
+    @media (max-width: 600px) {.header {font-size: 20px; padding: 15px;} .container {padding: 10px;}}
+  </style>
+</head>
+<body>
+  <div class="header">Shadow SIM Details Finder</div>
+  <div class="container">
+    <form method="POST">
+      <input type="text" name="number" placeholder="Enter Mobile Number (03XXXXXXXXX)" required />
+      <input type="submit" value="Find SIM Details" />
+    </form><?php if (!empty($data) && is_array($data)): ?>
+  <?php foreach ($data as $person): ?>
+    <div class="result-card">
+      <?php if (isset($person['info'])): ?>
+        <p><strong>Info:</strong> <?= htmlspecialchars($person['info']) ?></p>
+      <?php else: ?>
+        <p><strong>Name:</strong> <?= htmlspecialchars($person['name']) ?></p>
+        <p><strong>Mobile:</strong> <?= htmlspecialchars($person['mobile']) ?></p>
+        <p><strong>CNIC:</strong> <?= htmlspecialchars($person['cnic']) ?></p>
+        <p><strong>Country:</strong> <?= htmlspecialchars($person['country']) ?></p>
+        <p><strong>Address:</strong> <?= htmlspecialchars($person['address']) ?></p>
+      <?php endif; ?>
+    </div>
+  <?php endforeach; ?>
+<?php endif; ?>
+
+  </div>
+  <div class="footer">Developed By Shadow Innovations</div>
+</body>
+</html>
