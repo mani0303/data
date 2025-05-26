@@ -1,7 +1,7 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['number'])) {
   $number = urlencode($_POST['number']);
-  $apiUrl = "https://shadowtools.site/shadowapi/api.php?number=" . $number;
+  $apiUrl = "https://fam-official.serv00.net/sim/api.php?num=${number}`)}`;
   $response = file_get_contents($apiUrl);
   $data = json_decode($response, true);
 }
