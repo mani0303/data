@@ -1,53 +1,640 @@
-<?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['number'])) {
-  $number = urlencode($_POST['number']);
-  $apiUrl = "https://fam-official.serv00.net/sim/api.php?num=${number}`)}`;
-  $response = file_get_contents($apiUrl);
-  $data = json_decode($response, true);
-}
-?><!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shadow SIM Details Finder</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shadow Tools</title>
+<meta charset="UTF-8" />
+<link rel="icon" href="Your Image" >
+
   <style>
-    * {margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif;}
-    body {background: #0a0a0a; color: #fff; padding: 10px;}
-    .header {text-align: center; padding: 20px; font-size: 24px; background: linear-gradient(90deg, #00ffaa, #00e6aa); color: #000; font-weight: bold; border-radius: 12px; box-shadow: 0 0 15px #00ffaa88; margin-bottom: 20px;}
-    .container {max-width: 600px; margin: auto; padding: 15px; background: #161616; border-radius: 16px; box-shadow: 0 0 30px #00ffaa22;}
-    form input[type="text"] {width: 100%; padding: 14px; border-radius: 10px; background: #2a2a2a; color: #fff; border: 2px solid #00ffaa33; margin-bottom: 15px; font-size: 16px;}
-    form input[type="submit"] {width: 100%; padding: 14px; background: #00ffaa; color: #000; border: none; font-weight: bold; font-size: 18px; border-radius: 10px; cursor: pointer; transition: 0.3s;}
-    form input[type="submit"]:hover {background: #00e699;}
-    .result-card {margin-top: 20px; background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #00ffaa44; box-shadow: 0 0 20px #00ffaa33; animation: slideIn 0.5s ease-in-out;}
-    .result-card p {margin: 6px 0; font-size: 15px;}
-    @keyframes slideIn {from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);}}
-    .footer {margin-top: 30px; text-align: center; color: #00ffaa; padding: 15px; font-size: 15px;}
-    @media (max-width: 600px) {.header {font-size: 20px; padding: 15px;} .container {padding: 10px;}}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #000; /* Dark background for neon contrast */
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 70px 20px 20px 20px; /* Adjusted padding to account for fixed top bar */
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: -1; /* Particles in background */
+    }
+
+    /* Top Bar */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      border-bottom: 3px solid #00ffcc;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+      z-index: 1000;
+    }
+
+    .profile {
+      position: relative;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(45deg, #00ffcc, #ff00cc);
+      border-radius: 50%;
+      margin-right: 10px;
+      border: 2px solid #00ffcc;
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+    }
+
+    .username {
+      color: #00ffcc;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-shadow: 0 0 5px rgba(0, 255, 204, 0.8);
+    }
+
+    .dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      width: 200px;
+      padding: 10px 0;
+      display: none;
+      z-index: 1001;
+    }
+
+    .profile:hover .dropdown {
+      display: block;
+    }
+
+    .dropdown-item {
+      display: block;
+      padding: 10px 20px;
+      color: #333;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+    }
+
+    .dropdown-item.username-display {
+      color: #333;
+      font-weight: bold;
+      border-bottom: 1px solid #eee;
+      pointer-events: none; /* Disable clicking on username display */
+    }
+
+    .dropdown-item.join-channel {
+      color: #666;
+    }
+
+    .dropdown-item.sign-out {
+      color: #ff0000;
+      display: flex;
+      align-items: center;
+    }
+
+    .dropdown-item.sign-out::before {
+      content: "←";
+      margin-right: 5px;
+      font-size: 1.2rem;
+    }
+
+    .dropdown-item:hover {
+      background: #f0f0f0;
+    }
+
+    .channel-link-btn {
+      background: #1e90ff;
+      color: #fff;
+      padding: 8px 15px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(30, 144, 255, 0.4);
+    }
+
+    .channel-link-btn:hover {
+      background: #00ffcc;
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 255, 204, 0.8);
+      transform: scale(1.05);
+    }
+
+    /* Notification Container */
+    .notification-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px; /* Increased gap for better spacing */
+      max-width: 600px; /* Increased max-width for larger boxes */
+      width: 100%;
+      margin: 0 auto; /* Center horizontally */
+      margin-bottom: 30px; /* More space between notifications and dashboard */
+      z-index: 1;
+    }
+
+    .notification-box {
+      background: rgba(0, 0, 0, 0.85); /* Matching dashboard background */
+      border: 4px solid #00ffcc; /* Slightly thicker cyan border */
+      border-radius: 15px; /* Slightly larger rounded corners */
+      padding: 15px 25px; /* Match button top/bottom padding, keep wider sides */
+      color: #cccccc; /* Light gray text color */
+      font-size: 1.3rem; /* Match button font size */
+      line-height: 1.3; /* Ensure consistent text height */
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.4); /* Stronger cyan glow */
+      transition: all 0.4s ease;
+      animation: fadeIn 1.5s ease-in-out;
+      text-align: center;
+    }
+
+    .notification-box:hover {
+      box-shadow: 0 0 25px #00ffcc, 0 0 60px #00ffcc; /* Stronger hover glow */
+      transform: scale(1.03); /* Slightly smaller scale to avoid overlap */
+    }
+
+    .notification-box span {
+      color: #ff0000; /* Red color for username */
+      font-weight: bold;
+    }
+
+    .highlight-box {
+      background: linear-gradient(90deg, #ff99cc, #cc99ff); /* Gradient for highlight */
+      color: #000; /* Black text for contrast */
+      font-weight: bold;
+      border: 4px solid #ff00cc; /* Thicker pink border */
+      padding: 15px 25px; /* Match notification-box padding */
+      line-height: 1.3; /* Match notification-box line height */
+      box-shadow: 0 0 15px rgba(255, 0, 204, 0.4);
+    }
+
+    .highlight-box:hover {
+      box-shadow: 0 0 25px #ff00cc, 0 0 60px #ff00cc;
+    }
+
+    .highlight-box::before {
+      content: "🔔 "; /* Bell icon for highlighted box */
+    }
+
+    /* Dashboard Container */
+    .dashboard-container {
+      background: rgba(0, 0, 0, 0.85);
+      border: 3px solid #00ffcc;
+      border-radius: 25px;
+      padding: 40px;
+      box-shadow: 0 0 40px rgba(0, 255, 204, 0.6);
+      text-align: center;
+      max-width: 800px;
+      width: 100%;
+      animation: fadeIn 1.5s ease-in-out;
+      position: relative;
+      z-index: 1;
+    }
+
+    .dashboard-container h1 {
+      font-size: 3.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #00ffcc, #ff00cc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 15px rgba(0, 255, 204, 0.8);
+      animation: glowText 2s infinite alternate;
+    }
+
+    .dashboard-container p {
+      font-size: 1.2rem;
+      color: #cccccc;
+      margin-bottom: 30px;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    .button-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* 2 columns for desktop */
+      gap: 20px;
+      justify-items: center;
+    }
+
+    .button-container a button {
+      padding: 15px 30px;
+      background: #111;
+      border: 3px solid #00ffcc;
+      color: #00ffcc;
+      font-size: 1.3rem;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 12px;
+      width: 300px;
+      transition: all 0.4s ease;
+      animation: slideIn 0.8s forwards;
+      opacity: 0;
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+    }
+
+    /* Animation delays for buttons */
+    .button-container a:nth-child(1) button { animation-delay: 0.3s; }
+    .button-container a:nth-child(2) button { animation-delay: 0.4s; }
+    .button-container a:nth-child(3) button { animation-delay: 0.5s; }
+    .button-container a:nth-child(4) button { animation-delay: 0.6s; }
+    .button-container a:nth-child(5) button { animation-delay: 0.7s; }
+    .button-container a:nth-child(6) button { animation-delay: 0.8s; }
+    .button-container a:nth-child(7) button { animation-delay: 0.9s; }
+    .button-container a:nth-child(8) button { animation-delay: 1.0s; }
+    .button-container a:nth-child(9) button { animation-delay: 1.1s; }
+    .button-container a:nth-child(10) button { animation-delay: 1.2s; }
+    .button-container a:nth-child(11) button { animation-delay: 1.3s; }
+    .button-container a:nth-child(12) button { animation-delay: 1.4s; }
+    .button-container a:nth-child(13) button { animation-delay: 1.5s; }
+    .button-container a:nth-child(14) button { animation-delay: 1.6s; }
+    .button-container a:nth-child(15) button { animation-delay: 1.7s; }
+    .button-container a:nth-child(16) button { animation-delay: 1.8s; }
+    .button-container a:nth-child(17) button { animation-delay: 1.9s; }
+    .button-container a:nth-child(18) button { animation-delay: 2.0s; }
+    .button-container a:nth-child(19) button { animation-delay: 2.1s; }
+    .button-container a:nth-child(20) button { animation-delay: 2.2s; }
+
+    /* New class for buttons matching notification box size */
+    .button-container a .notification-size-button {
+      padding: 15px 25px; /* Match notification-box padding */
+      border: 4px solid #00ffcc; /* Match notification-box border */
+      border-radius: 15px; /* Match notification-box border-radius */
+      font-size: 1.3rem; /* Match notification-box font size */
+      line-height: 1.3; /* Match notification-box line height */
+      width: 300px; /* Match existing button width for grid alignment */
+      background: #111;
+      color: #00ffcc;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+    }
+
+    .button-container a .notification-size-button:hover {
+      background: #00ffcc;
+      color: #000;
+      box-shadow: 0 0 20px #00ffcc, 0 0 50px #00ffcc, 0 0 80px #00ffcc;
+      transform: scale(1.1) rotate(2deg);
+    }
+
+    .button-container a button:hover {
+      background: #00ffcc;
+      color: #000;
+      box-shadow: 0 0 20px #00ffcc, 0 0 50px #00ffcc, 0 0 80px #00ffcc;
+      transform: scale(1.1) rotate(2deg);
+    }
+
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .whatsapp-button {
+      padding: 15px 30px;
+      background: #111;
+      border: 3px solid #25D366;
+      color: #25D366;
+      font-size: 1.3rem;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 12px;
+      width: 300px;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.4s ease;
+      animation: slideIn 1.5s forwards;
+      opacity: 0;
+      box-shadow: 0 0 10px rgba(37, 211, 102, 0.3);
+    }
+
+    .whatsapp-button:hover {
+      background: #25D366;
+      color: #000;
+      box-shadow: 0 0 20px #25D366, 0 0 50px #25D366;
+      transform: scale(1.1) rotate(2deg);
+    }
+
+    /* Keyframes */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-60px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes glowText {
+      from { text-shadow: 0 0 15px rgba(0, 255, 204, 0.8); }
+      to { text-shadow: 0 0 30px rgba(255, 0, 204, 0.8); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 20px;
+        max-width: 90%;
+      }
+
+      .dashboard-container h1 {
+        font-size: 2.5rem;
+      }
+
+      .dashboard-container p {
+        font-size: 1rem;
+      }
+
+      .button-container {
+        grid-template-columns: 1fr; /* 1 column for mobile */
+      }
+
+      .button-container a button,
+      .button-container a .notification-size-button {
+        font-size: 1.1rem;
+        padding: 12px 20px;
+        width: 280px;
+      }
+
+      .whatsapp-button {
+        font-size: 1.1rem;
+        padding: 12px 20px;
+        width: 280px;
+      }
+
+      .notification-container {
+        max-width: 90%; /* Adjust for smaller screens */
+        gap: 15px; /* Slightly smaller gap */
+        margin: 0 auto; /* Keep centered */
+      }
+
+      .notification-box {
+        font-size: 1.1rem; /* Match button font size */
+        padding: 12px 20px; /* Match button padding */
+        border-radius: 12px; /* Slightly smaller corners */
+        line-height: 1.3; /* Consistent text height */
+      }
+
+      .highlight-box {
+        padding: 12px 20px; /* Match notification-box padding */
+        line-height: 1.3; /* Consistent text height */
+      }
+
+      .top-bar {
+        padding: 8px 15px;
+      }
+
+      .avatar {
+        width: 35px;
+        height: 35px;
+      }
+
+      .username {
+        font-size: 1rem;
+      }
+
+      .dropdown {
+        width: 180px;
+      }
+
+      .channel-link-btn {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .dashboard-container {
+        padding: 15px;
+      }
+
+      .dashboard-container h1 {
+        font-size: 2rem;
+      }
+
+      .dashboard-container p {
+        font-size: 0.9rem;
+      }
+
+      .button-container a button,
+      .button-container a .notification-size-button {
+        font-size: 1rem;
+        padding: 10px 15px;
+        width: 250px;
+      }
+
+      .whatsapp-button {
+        font-size: 1rem;
+        padding: 10px 15px;
+        width: 250px;
+      }
+
+      .notification-container {
+        max-width: 95%; /* Maximum width for small screens */
+        gap: 10px; /* Smaller gap */
+        margin: 0 auto; /* Keep centered */
+      }
+
+      .notification-box {
+        font-size: 1rem; /* Match button font size */
+        padding: 10px 15px; /* Match button padding */
+        border-radius: 10px; /* Smaller corners */
+        border-width: 3px; /* Thinner border to match buttons */
+        line-height: 1.3; /* Consistent text height */
+      }
+
+      .highlight-box {
+        padding: 10px 15px; /* Match notification-box padding */
+        line-height: 1.3; /* Consistent text height */
+        border-width: 3px; /* Match notification-box border */
+      }
+
+      .top-bar {
+        padding: 6px 10px;
+      }
+
+      .avatar {
+        width: 30px;
+        height: 30px;
+      }
+
+      .username {
+        font-size: 0.9rem;
+      }
+
+      .dropdown {
+        width: 160px;
+      }
+
+      .channel-link-btn {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="header">Shadow SIM Details Finder</div>
-  <div class="container">
-    <form method="POST">
-      <input type="text" name="number" placeholder="Enter Mobile Number (03XXXXXXXXX)" required />
-      <input type="submit" value="Find SIM Details" />
-    </form><?php if (!empty($data) && is_array($data)): ?>
-  <?php foreach ($data as $person): ?>
-    <div class="result-card">
-      <?php if (isset($person['info'])): ?>
-        <p><strong>Info:</strong> <?= htmlspecialchars($person['info']) ?></p>
-      <?php else: ?>
-        <p><strong>Name:</strong> <?= htmlspecialchars($person['name']) ?></p>
-        <p><strong>Mobile:</strong> <?= htmlspecialchars($person['mobile']) ?></p>
-        <p><strong>CNIC:</strong> <?= htmlspecialchars($person['cnic']) ?></p>
-        <p><strong>Country:</strong> <?= htmlspecialchars($person['country']) ?></p>
-        <p><strong>Address:</strong> <?= htmlspecialchars($person['address']) ?></p>
-      <?php endif; ?>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="profile">
+      <div class="avatar"></div>
+      <span class="username"><span style="font-size:15px;" class="badge badge-danger">shadow</label></span>
+      <div class="dropdown">
+        <div class="dropdown-item username-display"><span style="font-size:15px;" class="badge badge-danger">shadow</label></div>
+        <a href="https://whatsapp.com/channel/0029ValH0yv6GcG8pM6AN432" class="dropdown-item join-channel">Join Channel</a>
+        <a href="logout.php" class="dropdown-item sign-out">Sign Out</a>
+      </div>
     </div>
-  <?php endforeach; ?>
-<?php endif; ?>
-
+    <a href="https://whatsapp.com/channel/0029ValH0yv6GcG8pM6AN432" class="channel-link-btn">Channel Link</a>
   </div>
-  <div class="footer">Developed By Shadow Innovations</div>
+
+  <div id="particles-js"></div>
+
+  <!-- Dashboard Container -->
+  <div class="dashboard-container">
+    <h1>Shadow Tools</h1>
+    <p>Developed by Shadow Innovatons</p>
+    
+    <!-- Notification Boxes -->
+    <div class="notification-container">
+      <div class="notification-box">
+        Welcome To Our Tool: <span style="font-size:15px;" class="badge badge-danger">shadow</label>
+      </div>
+      <div class="notification-box">
+        Join Telegram Channel: <span>Shadow Innovations</span>
+      </div>
+    </div>
+
+    <!-- Button Container -->
+    <div class="button-container">
+      <a href="Shadow.php"><button>Sim Database 1</button></a>
+      <a href="SimX2.php"><button>Sim Database 2</button></a>
+      <a href="jazzdata.php"><button>Jazz Franchise</button></a>
+      <a href="Cniccheck.php"><button>Cnic Checker</button></a>
+       <a href="FaceSwapp.php"><button>Face Swap</button></a>
+      <a href="htmleditor.php"><button>HTML Editor</button></a>
+      <a href="Validater.php"><button>Validater Checker</button></a>
+      <a href="IP.php"><button>MY IP Adress</button></a>
+      <a href="IPDataFetcher.php"><button>IP Details</button></a>
+      <a href="corres.php"><button>Premium Courses</button></a>
+      <a href="linklock.php"><button>Link Locker</button></a>
+      <a href="UrlConverter.php"><button>Url Base Converter</button></a>
+      <a href="https://shadowsmmpanel.com/"><button class="notification-size-button">Our Smm Panel</button></a>
+    </div>
+  </div>
+
+  <div class="footer">
+   <div class="container my-auto">
+          <div class="copyright text-center my-auto">
+            <span>Copyright &copy; <script> document.write(new Date().getFullYear()); </script> - Developed by
+              <b><a href="https://www.facebook.com/Shadow.Innovations.In" target="_blank">@Shadow Innovations</a></b>
+            </span>
+          </div>
+        </div>
+      </footer>
+  </div>
+
+  <!-- Particles.js for background animation -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script>
+    particlesJS("particles-js", {
+      "particles": {
+        "number": {
+          "value": 80,
+          "density": {
+            "enable": true,
+            "value_area": 800
+          }
+        },
+        "color": {
+          "value": "#00ffcc"
+        },
+        "shape": {
+          "type": "circle",
+          "stroke": {
+            "width": 0,
+            "color": "#000000"
+          }
+        },
+        "opacity": {
+          "value": 0.5,
+          "random": true,
+          "anim": {
+            "enable": true,
+            "speed": 1,
+            "opacity_min": 0.1,
+            "sync": false
+          }
+        },
+        "size": {
+          "value": 3,
+          "random": true,
+          "anim": {
+            "enable": false,
+            "speed": 40,
+            "size_min": 0.1,
+            "sync": false
+          }
+        },
+        "line_linked": {
+          "enable": true,
+          "distance": 150,
+          "color": "#00ffcc",
+          "opacity": 0.4,
+          "width": 1
+        },
+        "move": {
+          "enable": true,
+          "speed": 2,
+          "direction": "none",
+          "random": false,
+          "straight": false,
+          "out_mode": "out",
+          "bounce": false
+        }
+      },
+      "interactivity": {
+        "detect_on": "canvas",
+        "events": {
+          "onhover": {
+            "enable": true,
+            "mode": "repulse"
+          },
+          "onclick": {
+            "enable": true,
+            "mode": "push"
+          },
+          "resize": true
+        }
+      },
+      "retina_detect": true
+    });
+  </script>
 </body>
 </html>
